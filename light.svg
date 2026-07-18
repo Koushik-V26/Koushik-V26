@@ -76,7 +76,7 @@ text, tspan {white-space: pre;}
 <text x="500" y="30" fill="#24292f">
 <tspan x="520" y="30" fill="#0969da" fontsize="17px">Koushik@Neural-grid</tspan> -———————————————————————————————————————————-—-
 <tspan x="520" y="50" class="cc">. </tspan><tspan class="key">Subject</tspan>:<tspan class="cc"> ....................... </tspan><tspan class="value">Koushik Varanasi</tspan>
-<tspan x="520" y="70" class="cc">. </tspan><tspan class="key">Role</tspan>:<tspan class="cc" id="age_data_dots"> .......................... </tspan><tspan class="value" id="age_data">24 years, 0 months, 11 days</tspan>
+<tspan x="520" y="70" class="cc">. </tspan><tspan class="key">Role</tspan>:<tspan class="cc" id="age_data_dots"> .......................... </tspan><tspan class="value" id="age_data">Aspiring Data Scientist</tspan>
 <tspan x="520" y="90" class="cc">. </tspan><tspan class="key">Origin</tspan>:<tspan class="cc"> ........................ </tspan><tspan class="value">Salur, India</tspan>
 <tspan x="520" y="110" class="cc">. </tspan><tspan class="key">Status</tspan>:<tspan class="cc"> ........................ </tspan><tspan class="value">Data Science Student</tspan>
 <tspan x="520" y="130" class="cc">. </tspan><tspan class="key">ToolChain</tspan>:<tspan class="cc"> ..................... </tspan><tspan class="value">VS Code, Git, Jupyter, Colab</tspan>
