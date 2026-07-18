@@ -10,9 +10,57 @@ import hashlib
 # Account permissions: read:Followers, read:Starring, read:Watching
 # Repository permissions: read:Commit statuses, read:Contents, read:Issues, read:Metadata, read:Pull Requests
 # Issues and pull requests permissions not needed at the moment, but may be used in the future
-HEADERS = {'authorization': 'token '+ os.environ['ACCESS_TOKEN']}
-USER_NAME = os.environ['USER_NAME']
+
+def check_token(headers):
+    # Simple query to check if the headers work
+    query = 'query { viewer { login } }'
+    try:
+        r = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+def init_auth():
+    access_token = os.environ.get('ACCESS_TOKEN', '').strip()
+    github_token = os.environ.get('GITHUB_TOKEN', '').strip()
+    
+    # Try ACCESS_TOKEN first
+    if access_token:
+        # Use Bearer token scheme as it is the standard for GitHub GraphQL API
+        headers = {'authorization': 'Bearer ' + access_token}
+        if check_token(headers):
+            return headers
+        else:
+            print("Warning: The ACCESS_TOKEN secret is invalid or has expired (401 Bad Credentials).")
+            print("Please create a new GitHub Personal Access Token (PAT) with required permissions")
+            print("and update the ACCESS_TOKEN secret in your repository Settings > Secrets and variables > Actions.")
+            
+    # Try GITHUB_TOKEN fallback
+    if github_token:
+        headers = {'authorization': 'Bearer ' + github_token}
+        if check_token(headers):
+            print("Successfully authenticated using GITHUB_TOKEN fallback. Private metrics might be limited.")
+            return headers
+        else:
+            print("Warning: GITHUB_TOKEN fallback is also invalid (401 Bad Credentials).")
+            
+    if not access_token and not github_token:
+        raise ValueError("Neither ACCESS_TOKEN nor GITHUB_TOKEN environment variable is set.")
+    else:
+        raise ValueError("Authentication failed: all provided tokens are invalid or expired.")
+
+HEADERS = init_auth()
+
+USER_NAME = os.environ.get('USER_NAME', '').strip()
+if not USER_NAME:
+    repo = os.environ.get('GITHUB_REPOSITORY', '')
+    if '/' in repo:
+        USER_NAME = repo.split('/')[0]
+    else:
+        raise ValueError("USER_NAME environment variable is not set and could not be inferred from GITHUB_REPOSITORY.")
+
 QUERY_COUNT = {'user_getter': 0, 'follower_getter': 0, 'graph_repos_stars': 0, 'recursive_loc': 0, 'graph_commits': 0, 'loc_query': 0}
+
 
 
 def daily_readme(birthday):
