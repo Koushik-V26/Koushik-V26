@@ -94,6 +94,11 @@ def simple_request(func_name, query, variables):
     """
     request = requests.post('https://api.github.com/graphql', json={'query': query, 'variables':variables}, headers=HEADERS)
     if request.status_code == 200:
+        res = request.json()
+        if 'errors' in res:
+            raise Exception(f"{func_name} failed with GraphQL errors: {res['errors']}")
+        if not res.get('data'):
+            raise Exception(f"{func_name} failed: Response data is empty. Full response: {res}")
         return request
     raise Exception(func_name, ' has failed with a', request.status_code, request.text, QUERY_COUNT)
 
@@ -194,8 +199,15 @@ def recursive_loc(owner, repo_name, data, cache_comment, addition_total=0, delet
     variables = {'repo_name': repo_name, 'owner': owner, 'cursor': cursor}
     request = requests.post('https://api.github.com/graphql', json={'query': query, 'variables':variables}, headers=HEADERS) # I cannot use simple_request(), because I want to save the file before raising Exception
     if request.status_code == 200:
-        if request.json()['data']['repository']['defaultBranchRef'] != None: # Only count commits if repo isn't empty
-            return loc_counter_one_repo(owner, repo_name, data, cache_comment, request.json()['data']['repository']['defaultBranchRef']['target']['history'], addition_total, deletion_total, my_commits)
+        res = request.json()
+        if 'errors' in res:
+            force_close_file(data, cache_comment)
+            raise Exception(f"recursive_loc() failed with GraphQL errors: {res['errors']}")
+        if not res.get('data') or not res['data'].get('repository'):
+            force_close_file(data, cache_comment)
+            raise Exception(f"recursive_loc() failed: repository data is None. Full response: {res}")
+        if res['data']['repository']['defaultBranchRef'] != None: # Only count commits if repo isn't empty
+            return loc_counter_one_repo(owner, repo_name, data, cache_comment, res['data']['repository']['defaultBranchRef']['target']['history'], addition_total, deletion_total, my_commits)
         else: return 0
     force_close_file(data, cache_comment) # saves what is currently in the file before this program crashes
     if request.status_code == 403:
